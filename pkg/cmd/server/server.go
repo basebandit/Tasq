@@ -110,5 +110,3 @@ func runMigrations(db *sql.DB, migrationsPath string) error {
 	}
 	return err
 }
-
-
