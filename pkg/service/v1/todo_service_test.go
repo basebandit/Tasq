@@ -288,3 +288,192 @@ func TestToDoServiceServerRead(t *testing.T) {
 	}
 }
 
+func TestToDoServiceUpdate(t *testing.T) {
+	ctx := context.Background()
+	db, mock, err := sqlMock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	s := NewToDoServiceServer(db)
+	tm := time.Now().In(time.UTC)
+	atc := time.Date(2020, 2, 27, 3, 15, 45, 34567, time.UTC)
+	reminder, _ := ptypes.TimestampProto(tm)
+	estimatedTimeOfCompletion, _ := ptypes.TimestampProto(tm)
+	actualTimeOfCompletion, _ := ptypes.TimestampProto(atc)
+
+	type args struct {
+		ctx context.Context
+		req *v1.UpdateRequest
+	}
+
+	tests := []struct {
+		name    string
+		s       v1.ToDoServiceServer
+		args    args
+		mock    func()
+		want    *v1.UpdateResponse
+		wantErr bool
+	}{
+		{
+			name: "OK",
+			s:    s,
+			args: args{
+				ctx: ctx,
+				req: &v1.UpdateRequest{
+					Api: apiVersion,
+					ToDo: &v1.ToDo{
+						Id:                        1,
+						Title:                     "new title",
+						Description:               "new description",
+						Status:                    "Completed",
+						EstimatedTimeOfCompletion: estimatedTimeOfCompletion,
+						ActualTimeOfCompletion:    actualTimeOfCompletion,
+						Reminder:                  reminder,
+					},
+				},
+			},
+			mock: func() {
+				mock.ExpectExec("UPDATE ToDo").WithArgs("new title", "new description", "Completed", tm, atc, tm, 1).WillReturnResult(sqlMock.NewResult(1, 1))
+			},
+			want: &v1.UpdateResponse{
+				Api:     apiVersion,
+				Updated: 1,
+			},
+		},
+		{
+			name: "Unsupported API",
+			s:    s,
+			args: args{
+				ctx: ctx,
+				req: &v1.UpdateRequest{
+					Api: apiVersion,
+					ToDo: &v1.ToDo{
+						Id:                        1,
+						Title:                     "new title",
+						Description:               "new description",
+						Status:                    "Started",
+						EstimatedTimeOfCompletion: estimatedTimeOfCompletion,
+						ActualTimeOfCompletion:    actualTimeOfCompletion,
+						Reminder:                  reminder,
+					},
+				},
+			},
+			mock:    func() {},
+			wantErr: true,
+		},
+		{
+			name: "Invalid Reminder field format",
+			s:    s,
+			args: args{
+				ctx: ctx,
+				req: &v1.UpdateRequest{
+					Api: apiVersion,
+					ToDo: &v1.ToDo{
+						Id:          1,
+						Title:       "new title",
+						Description: "new description",
+						Status:      "Completed",
+						EstimatedTimeOfCompletion: &timestamp.Timestamp{
+							Seconds: 1,
+							Nanos:   -1,
+						},
+						ActualTimeOfCompletion: &timestamp.Timestamp{
+							Seconds: 1,
+							Nanos:   -1,
+						},
+						Reminder: &timestamp.Timestamp{
+							Seconds: 1,
+							Nanos:   -1,
+						},
+					},
+				},
+			},
+			mock:    func() {},
+			wantErr: true,
+		},
+		{
+			name: "UPDATE failed",
+			s:    s,
+			args: args{
+				ctx: ctx,
+				req: &v1.UpdateRequest{
+					Api: apiVersion,
+					ToDo: &v1.ToDo{
+						Id:                        1,
+						Title:                     "new title",
+						Description:               "new description",
+						Status:                    "Completed",
+						EstimatedTimeOfCompletion: estimatedTimeOfCompletion,
+						ActualTimeOfCompletion:    actualTimeOfCompletion,
+						Reminder:                  reminder,
+					},
+				},
+			},
+			mock: func() {
+				mock.ExpectExec("UPDATE ToDo").WithArgs("new title", "new description", "Completed", tm, atc, tm, 1).WillReturnError(errors.New("UPDATE failed"))
+			},
+			wantErr: true,
+		},
+		{
+			name: "RowsAffected failed",
+			s:    s,
+			args: args{
+				ctx: ctx,
+				req: &v1.UpdateRequest{
+					Api: apiVersion,
+					ToDo: &v1.ToDo{
+						Id:                        1,
+						Title:                     "new title",
+						Description:               "new description",
+						Status:                    "Started",
+						EstimatedTimeOfCompletion: estimatedTimeOfCompletion,
+						ActualTimeOfCompletion:    actualTimeOfCompletion,
+						Reminder:                  reminder,
+					},
+				},
+			},
+			mock: func() {
+				mock.ExpectExec("UPDATE ToDo").WithArgs("new title", "new description", "Started", tm, atc, tm, 1).WillReturnResult(sqlMock.NewErrorResult(errors.New("RowsAffected failed")))
+			},
+			wantErr: true,
+		},
+		{
+			name: "Not Found",
+			s:    s,
+			args: args{
+				ctx: ctx,
+				req: &v1.UpdateRequest{
+					Api: apiVersion,
+					ToDo: &v1.ToDo{
+						Id:                        1,
+						Title:                     "new title",
+						Description:               "new description",
+						Status:                    "Started",
+						EstimatedTimeOfCompletion: estimatedTimeOfCompletion,
+						ActualTimeOfCompletion:    actualTimeOfCompletion,
+						Reminder:                  reminder,
+					},
+				},
+			},
+			mock: func() {
+				mock.ExpectExec("UPDATE ToDo").WithArgs("new title", "new description", tm, atc, tm, 1).WillReturnResult(sqlMock.NewResult(1, 0))
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mock()
+			got, err := tt.s.Update(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("toDoServiceServer.Update() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if err == nil && !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("toDoServiceServer.Update() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
