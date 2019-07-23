@@ -588,3 +588,87 @@ func TestToDoServiceServerDelete(t *testing.T) {
 		})
 	}
 }
+
+func TestToDoServiceServerReadAll(t *testing.T) {
+	ctx := context.Background()
+	db, mock, err := sqlMock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	s := NewToDoServiceServer(db)
+	t1 := time.Now().In(time.UTC)
+	tm1 := time.Date(2019, 9, 27, 8, 30, 45, 56478, time.UTC)
+	reminder1, _ := ptypes.TimestampProto(t1)
+	estimatedTimeOfCompletion1, _ := ptypes.TimestampProto(t1)
+	actualTimeOfCompletion1, _ := ptypes.TimestampProto(tm1)
+	t2 := time.Now().In(time.UTC)
+	tm2 := time.Date(2019, 10, 26, 8, 30, 50, 23474, time.UTC)
+	reminder2, _ := ptypes.TimestampProto(t2)
+	estimatedTimeOfCompletion2, _ := ptypes.TimestampProto(t2)
+	actualTimeOfCompletion2, _ := ptypes.TimestampProto(tm2)
+
+	type args struct {
+		ctx context.Context
+		req *v1.ReadAllRequest
+	}
+	tests := []struct {
+		name    string
+		s       v1.ToDoServiceServer
+		args    args
+		mock    func()
+		want    *v1.ReadAllResponse
+		wantErr bool
+	}{
+		{
+			name: "OK",
+			s:    s,
+			args: args{
+				ctx: ctx,
+				req: &v1.ReadAllRequest{
+					Api: apiVersion,
+				},
+			},
+			mock: func() {
+				rows := sqlMock.NewRows([]string{"ID", "Title", "Description", "Status", "EstimatedTimeOfCompletion", "ActualTimeOfCompletion", "Reminder"}).AddRow(1, "title 1", "description 1", "Completed", t1, tm1, t1).AddRow(2, "title 2", "description 2", "InProgress", t2, tm2, t2)
+				mock.ExpectQuery("SELECT (.+) FROM ToDo").WillReturnRows(rows)
+			},
+			want: &v1.ReadAllResponse{
+				Api: "v1",
+				ToDos: []*v1.ToDo{
+					{
+						Id:                        1,
+						Title:                     "title 1",
+						Status:                    "Completed",
+						Description:               "description 1",
+						EstimatedTimeOfCompletion: estimatedTimeOfCompletion1,
+						ActualTimeOfCompletion:    actualTimeOfCompletion1,
+						Reminder:                  reminder1,
+					},
+					{
+						Id:                        2,
+						Title:                     "title 2",
+						Status:                    "InProgress",
+						Description:               "description 2",
+						EstimatedTimeOfCompletion: estimatedTimeOfCompletion2,
+						ActualTimeOfCompletion:    actualTimeOfCompletion2,
+						Reminder:                  reminder2,
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mock()
+			got, err := tt.s.ReadAll(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("toDoService.ReadAll() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if err == nil && !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("toDoServiceServer.ReadAll() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
