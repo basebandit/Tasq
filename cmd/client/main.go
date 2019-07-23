@@ -61,5 +61,19 @@ func main() {
 	}
 
 	log.Printf("Create result: <%+v>\n\n", res1)
+	id := res1.Id
 
+	//Read a ToDo entity
+	req2 := v1.ReadRequest{
+		Api: apiVersion,
+		Id:  id,
+	}
+	res2, err := c.Read(ctx, &req2)
+	if err != nil {
+		log.Fatalf("Read failed: %v", err)
+	}
+
+	log.Printf("Read result: <%+v>\n\n", res2)
+
+	
 }
