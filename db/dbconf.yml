@@ -1,0 +1,5 @@
+development:
+    driver: mysql 
+    open: user:password@/db?charset=utf8&parseTime=True&loc=Local
+    dialect: mysql
+    import: database/sql
