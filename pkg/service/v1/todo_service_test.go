@@ -176,3 +176,115 @@ func TestToDoServiceServerCreate(t *testing.T) {
 
 }
 
+func TestToDoServiceServerRead(t *testing.T) {
+	ctx := context.Background()
+	db, mock, err := sqlMock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	s := NewToDoServiceServer(db)
+	tm := time.Now().In(time.UTC)
+	reminder, _ := ptypes.TimestampProto(tm)
+	estimatedTimeOfCompletion, _ := ptypes.TimestampProto(tm)
+	actualTimeOfCompletion, _ := ptypes.TimestampProto(tm)
+
+	type args struct {
+		ctx context.Context
+		req *v1.ReadRequest
+	}
+	tests := []struct {
+		name    string
+		s       v1.ToDoServiceServer
+		args    args
+		mock    func()
+		want    *v1.ReadResponse
+		wantErr bool
+	}{
+		{
+			name: "OK",
+			s:    s,
+			args: args{
+				ctx: ctx,
+				req: &v1.ReadRequest{
+					Api: "v1",
+					Id:  1,
+				},
+			},
+			mock: func() {
+				rows := sqlMock.NewRows([]string{"ID", "Title", "Description", "Status", "EstimatedTimeOfCompletion", "ActualTimeOfCompletion", "Reminder"}).AddRow(1, "title", "description", "status", tm, tm, tm)
+				mock.ExpectQuery("SELECT (.+) FROM ToDo").WithArgs(1).WillReturnRows(rows)
+			},
+			want: &v1.ReadResponse{
+				Api: "v1",
+				ToDo: &v1.ToDo{
+					Id:                        1,
+					Title:                     "title",
+					Description:               "description",
+					Status:                    "status",
+					EstimatedTimeOfCompletion: estimatedTimeOfCompletion,
+					ActualTimeOfCompletion:    actualTimeOfCompletion,
+					Reminder:                  reminder,
+				},
+			},
+		},
+		{
+			name: "Unsupported API",
+			s:    s,
+			args: args{
+				ctx: ctx,
+				req: &v1.ReadRequest{
+					Api: "V1",
+					Id:  1,
+				},
+			},
+			mock:    func() {},
+			wantErr: true,
+		},
+		{
+			name: "SELECT failed",
+			s:    s,
+			args: args{
+				ctx: ctx,
+				req: &v1.ReadRequest{
+					Api: apiVersion,
+					Id:  1,
+				},
+			},
+			mock: func() {
+				mock.ExpectQuery("SELECT (.+) FROM ToDo").WithArgs(1).WillReturnError(errors.New("SELECT failed"))
+			},
+			wantErr: true,
+		},
+		{
+			name: "Not found",
+			s:    s,
+			args: args{
+				ctx: ctx,
+				req: &v1.ReadRequest{
+					Api: apiVersion,
+					Id:  1,
+				},
+			},
+			mock: func() {
+				rows := sqlMock.NewRows([]string{"ID", "Title", "Description", "Status", "EstimatedTimeOfCompletion", "ActualTimeOfCompletion", "Reminder"})
+				mock.ExpectQuery("SELECT (.+) FROM ToDo").WithArgs(1).WillReturnRows(rows)
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mock()
+			got, err := tt.s.Read(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("toDoserviceServer.Read() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if err == nil && !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("toDoServiceServer.Read() error = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
