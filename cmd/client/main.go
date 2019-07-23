@@ -75,5 +75,24 @@ func main() {
 
 	log.Printf("Read result: <%+v>\n\n", res2)
 
+	//Update a ToDo entity
+	req3 := v1.UpdateRequest{
+		Api: apiVersion,
+		ToDo: &v1.ToDo{
+			Id:                        res2.ToDo.Id,
+			Title:                     res2.ToDo.Title,
+			Description:               res2.ToDo.Description,
+			Status:                    "Completed",
+			EstimatedTimeOfCompletion: res2.ToDo.EstimatedTimeOfCompletion,
+			Reminder:                  res2.ToDo.Reminder,
+		},
+	}
+
+	res3, err := c.Update(ctx, &req3)
+	if err != nil {
+		log.Fatalf("Update failed: %v", err)
+	}
+	log.Printf("Update result: <+%v>\n\n", res3)
+
 	
 }
