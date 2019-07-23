@@ -94,5 +94,15 @@ func main() {
 	}
 	log.Printf("Update result: <+%v>\n\n", res3)
 
-	
+	//ReadAll ToDo entities
+	req4 := v1.ReadAllRequest{
+		Api: apiVersion,
+	}
+
+	res4, err := c.ReadAll(ctx, &req4)
+	if err != nil {
+		log.Fatalf("ReadAll failed: %v", err)
+	}
+	log.Printf("ReadAll result: <%+v>\n\n", res4)
+
 }
