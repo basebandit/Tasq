@@ -657,6 +657,36 @@ func TestToDoServiceServerReadAll(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "Empty",
+			s:    s,
+			args: args{
+				ctx: ctx,
+				req: &v1.ReadAllRequest{
+					Api: apiVersion,
+				},
+			},
+			mock: func() {
+				rows := sqlMock.NewRows([]string{"ID", "Title", "Status", "Description", "EstimatedTimeOfCompletion", "ActualTimeOfCompletion", "Reminder"})
+				mock.ExpectQuery("SELECT (.+) FROM ToDo").WillReturnRows(rows)
+			},
+			want: &v1.ReadAllResponse{
+				Api:   "v1",
+				ToDos: []*v1.ToDo{},
+			},
+		},
+		{
+			name: "Unsupported API",
+			s:    s,
+			args: args{
+				ctx: ctx,
+				req: &v1.ReadAllRequest{
+					Api: "v2",
+				},
+			},
+			mock:    func() {},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
