@@ -2,6 +2,34 @@ syntax = "proto3";
 package v1;
 
 import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-swagger/options/annotations.proto";
+
+option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
+ info: {
+   title: "ToDo service";
+   version: "1.0";
+   contact:{
+     name: "a simple task manager api";
+     url:"https://github.com/basebandit/tasq";
+     email:"simple@basebandit.dev";
+   };
+ };
+ schemes : HTTP;
+ consumes: "application/json";
+ produces: "application/json";
+ responses: {
+   key:"404";
+   value:{
+     description: "Returned when the resource does not exist.";
+     schema: {
+       json_schema: {
+         type: STRING;
+       }
+     };
+   };
+ };
+};
 
 //Tasks we have todo
 message ToDo{
@@ -119,17 +147,44 @@ message ReadAllResponse{
 // Service to manage list of todo tasks
 service ToDoService {
     // Create new todo task
-    rpc Create(CreateRequest) returns (CreateResponse);
+    rpc Create(CreateRequest) returns (CreateResponse){
+      option (google.api.http) = {
+        post: "/v1/tasq"
+        body:"*"
+      };
+    }
 
     // Read todo task
-    rpc Read(ReadRequest) returns (ReadResponse);
+    rpc Read(ReadRequest) returns (ReadResponse){
+      option (google.api.http) = {
+       get: "/v1/tasq/{id}"
+      };
+    }
 
     // Update todo task
-    rpc Update(UpdateRequest) returns (UpdateResponse);
+    rpc Update(UpdateRequest) returns (UpdateResponse){
+      option(google.api.http) = {
+        put: "/v1/tasq/{toDo.id}"
+        body:"*"
+
+        additional_bindings{
+          patch: "/v1/tasq/{toDo.id}"
+          body:"*"
+        }
+      };
+    }
 
     // Delete todo task
-    rpc Delete(DeleteRequest) returns (DeleteResponse);
+    rpc Delete(DeleteRequest) returns (DeleteResponse){
+      option (google.api.http) = {
+        delete:"/v1/tasq/{id}"
+      };
+    }
 
     // Read all todo tasks
-    rpc ReadAll(ReadAllRequest) returns (ReadAllResponse);
+    rpc ReadAll(ReadAllRequest) returns (ReadAllResponse){
+      option(google.api.http) = {
+        get: "/v1/tasq/all"
+      };
+    }
 }
