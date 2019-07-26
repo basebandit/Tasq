@@ -9,6 +9,7 @@ import (
 
 	"bitbucket.org/liamstask/goose/lib/goose"
 	"github.com/basebandit/go-grpc/pkg/protocol/grpc"
+	"github.com/basebandit/go-grpc/pkg/protocol/rest"
 	v1 "github.com/basebandit/go-grpc/pkg/service/v1"
 )
 
@@ -17,7 +18,8 @@ type Config struct {
 
 	//gRPC is the TCP port to listen by gRPC server
 	GRPCPort string
-
+	//HTTPPort is the TCP port to listen for HTTP/REST gateway connections
+	HTTPPort string
 	//DBHost is the host of database
 	DBHost string
 
@@ -53,13 +55,17 @@ func RunServer() error {
 		return fmt.Errorf("invalid TCP port for gRPC server: '%s'", cfg.GRPCPort)
 	}
 
+	if len(cfg.HTTPPort) == 0 {
+		return fmt.Errorf("invalid TCP port for HTTP gateway: '%s'", cfg.HTTPPort)
+	}
+
 	if len(cfg.DBMigrations) == 0 {
 		return fmt.Errorf("invalid database migrations path: '%s'", cfg.DBMigrations)
 	}
 
 	//Lets chek if migrations Directory path exists
 	if _, err := os.Stat(cfg.DBMigrations); os.IsNotExist(err) {
-		return fmt.Errorf("you need to provide the path to directory where your migrations are stored: ./todo -migrations <migrations_path>")
+		return fmt.Errorf("you need to provide the path to directory where your migrations are stored:  -migrations <migrations_path>")
 	}
 	//add MySQL driver specific parameter to parse date/time
 	//Drop it for another database
@@ -80,6 +86,11 @@ func RunServer() error {
 	}
 
 	v1API := v1.NewToDoServiceServer(db)
+
+	//run HTTP/REST gateway
+	go func() {
+		_ = rest.RunServer(ctx, cfg.GRPCPort, cfg.HTTPPort)
+	}()
 
 	return grpc.RunServer(ctx, v1API, cfg.GRPCPort)
 }
