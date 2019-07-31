@@ -99,5 +99,17 @@ func main() {
 	}
 	log.Printf("update response: Code=%d, Body=%s\n\n", resp.StatusCode, body)
 
-	
+	//Call ReadAll
+	resp, err = httpClient.Get(*address + "/v1/tasq/all")
+	if err != nil {
+		log.Fatalf("failed to call ReadAll method: %v", err)
+	}
+	bodyBytes, err = ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		body = fmt.Sprintf("failed to read ReadAll response body: %v", err)
+	} else {
+		body = string(bodyBytes)
+	}
+	log.Printf("ReadAll response: Code=%d, Body=%s\n\n", resp.StatusCode, body)
 }
