@@ -86,7 +86,7 @@ func main() {
 	}`,
 		pfx, pfx, pfx)))
 	req.Header.Set("Content-Type", "application/json")
-	resp, err = http.DefaultClient.Do(req)
+	resp, err = httpClient.Do(req)
 	if err != nil {
 		log.Fatalf("failed to call Update method: %v", err)
 	}
@@ -112,4 +112,19 @@ func main() {
 		body = string(bodyBytes)
 	}
 	log.Printf("ReadAll response: Code=%d, Body=%s\n\n", resp.StatusCode, body)
+
+	//Call Delete
+	req, err = http.NewRequest("DELETE", fmt.Sprintf("%s%s/%s", *address, "/v1/tasq", created.ID), nil)
+	resp, err = httpClient.Do(req)
+	if err != nil {
+		log.Fatalf("failed to call Delete method: %v", err)
+	}
+	bodyBytes, err = ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		body = fmt.Sprintf("failed to read Delete response body: %v", err)
+	} else {
+		body = string(bodyBytes)
+	}
+	log.Printf("Delete response: Code=%d,Body=%s\n\n", resp.StatusCode, body)
 }
