@@ -18,7 +18,7 @@ func main() {
 
 	t := time.Now().In(time.UTC)
 	pfx := t.Format(time.RFC3339Nano)
-
+	etc := time.Now().In(time.UTC)
 	var body string
 
 	//Our custom client PS: Avoid using the default http client
@@ -34,12 +34,14 @@ func main() {
 		"toDo":{
 			"title":"title (%s)",
 			"description":"description (%s)",
+			"status":"status (%s)",
+			"estimatedTimeOfCompletion:"%s",
 			"reminder":"%s"
 		}
 	}
-	`, pfx, pfx, pfx)))
+	`, pfx, pfx, pfx, etc, pfx)))
 	if err != nil {
-		log.Fatal("failed to call Create method: %v", err)
+		log.Fatalf("failed to call Create method: %v", err)
 	}
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
@@ -81,6 +83,7 @@ func main() {
 		"toDo":{
 			"title":"title (%s) + updated",
 			"description":"description (%s) + updated",
+			"status":"Completed",
 			"reminder":"%s"
 		}
 	}`,
