@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	cmd "github.com/basebandit/go-grpc/pkg/cmd/server"
+	"github.com/basebandit/go-grpc/pkg/cmd"
 )
 
 func main() {
