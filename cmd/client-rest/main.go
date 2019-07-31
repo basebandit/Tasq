@@ -55,4 +55,17 @@ func main() {
 		log.Fatalf("failed to unmarshal JSON response of Create method: %v", err)
 	}
 
+	//Call Read
+	resp, err = http.Get(fmt.Sprintf("%s%s/%s", *address, "/v1/tasq", created.ID))
+	if err != nil {
+		log.Fatalf("failed to call Read method: %v", err)
+	}
+	bodyBytes, err = ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		body = fmt.Sprintf("failed to read Read response body: %v", err)
+	} else {
+		body = string(bodyBytes)
+	}
+	log.Printf("Read response: Code=%d, Body=%s\n\n", resp.StatusCode, body)
 }
