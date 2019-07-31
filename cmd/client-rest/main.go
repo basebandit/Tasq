@@ -68,4 +68,28 @@ func main() {
 		body = string(bodyBytes)
 	}
 	log.Printf("Read response: Code=%d, Body=%s\n\n", resp.StatusCode, body)
+
+	//Call update
+	req,err := http.NewRequest("PUT",fmt.Sprintf("%s%s/%s",*address,"/v1/tasq",created.ID),strings.NewReader(fmt.Sprintf({`
+		"api":"v1",
+		"toDo":{
+			"title":"title (%s) + updated",
+			"description":"description (%s) + updated",
+			"reminder":"%s"
+		}
+	}`,
+	pfx,pfx,pfx)))
+	req.Header.Set("Content-Type","application/json")
+	resp,err = http.DefaultClient.Do(req)
+	if err != nil{
+		log.Fatalf("failed to call Update method: %v",err)
+	}
+	bodyBytes,err = ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil{
+		body = fmt.Sprintf("failed to read Update response body: %v",err)
+	}else{
+		body = string(bodyBybodyBytes)
+	}
+	log.Printf("update response: Code=%d, Body=%s\n\n",resp.StatusCode,body)
 }
