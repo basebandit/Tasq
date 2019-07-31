@@ -21,8 +21,14 @@ func main() {
 
 	var body string
 
+	//Our custom client PS: Avoid using the default http client
+	//@see https://medium.com/@nate510/don-t-use-go-s-default-http-client-4804cb19f779
+	httpClient := &http.Client{
+		Timeout: time.Second * 10,
+	}
+
 	//Call Create
-	resp, err := http.Post(*address+"/v1/tasq", "application/json", strings.NewReader(fmt.Sprintf(`
+	resp, err := httpClient.Post(*address+"/v1/tasq", "application/json", strings.NewReader(fmt.Sprintf(`
 	{
 		"api":"v1",
 		"toDo":{
@@ -56,7 +62,7 @@ func main() {
 	}
 
 	//Call Read
-	resp, err = http.Get(fmt.Sprintf("%s%s/%s", *address, "/v1/tasq", created.ID))
+	resp, err = httpClient.Get(fmt.Sprintf("%s%s/%s", *address, "/v1/tasq", created.ID))
 	if err != nil {
 		log.Fatalf("failed to call Read method: %v", err)
 	}
@@ -70,7 +76,7 @@ func main() {
 	log.Printf("Read response: Code=%d, Body=%s\n\n", resp.StatusCode, body)
 
 	//Call update
-	req,err := http.NewRequest("PUT",fmt.Sprintf("%s%s/%s",*address,"/v1/tasq",created.ID),strings.NewReader(fmt.Sprintf({`
+	req, err := http.NewRequest("PUT", fmt.Sprintf("%s%s/%s", *address, "/v1/tasq", created.ID), strings.NewReader(fmt.Sprintf(`{
 		"api":"v1",
 		"toDo":{
 			"title":"title (%s) + updated",
@@ -78,18 +84,20 @@ func main() {
 			"reminder":"%s"
 		}
 	}`,
-	pfx,pfx,pfx)))
-	req.Header.Set("Content-Type","application/json")
-	resp,err = http.DefaultClient.Do(req)
-	if err != nil{
-		log.Fatalf("failed to call Update method: %v",err)
+		pfx, pfx, pfx)))
+	req.Header.Set("Content-Type", "application/json")
+	resp, err = http.DefaultClient.Do(req)
+	if err != nil {
+		log.Fatalf("failed to call Update method: %v", err)
 	}
-	bodyBytes,err = ioutil.ReadAll(resp.Body)
+	bodyBytes, err = ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
-	if err != nil{
-		body = fmt.Sprintf("failed to read Update response body: %v",err)
-	}else{
-		body = string(bodyBybodyBytes)
+	if err != nil {
+		body = fmt.Sprintf("failed to read Update response body: %v", err)
+	} else {
+		body = string(bodyBytes)
 	}
-	log.Printf("update response: Code=%d, Body=%s\n\n",resp.StatusCode,body)
+	log.Printf("update response: Code=%d, Body=%s\n\n", resp.StatusCode, body)
+
+	
 }
