@@ -18,7 +18,7 @@ func main() {
 
 	t := time.Now().In(time.UTC)
 	pfx := t.Format(time.RFC3339Nano)
-	etc := time.Now().In(time.UTC)
+
 	var body string
 
 	//Our custom client PS: Avoid using the default http client
@@ -31,15 +31,15 @@ func main() {
 	resp, err := httpClient.Post(*address+"/v1/tasq", "application/json", strings.NewReader(fmt.Sprintf(`
 	{
 		"api":"v1",
-		"toDo":{
+		"toDo": {
 			"title":"title (%s)",
 			"description":"description (%s)",
-			"status":"status (%s)",
-			"estimatedTimeOfCompletion:"%s",
+			"estimatedTimeOfCompletion":"%s",
+			"actualTimeOfCompletion":"%s",
 			"reminder":"%s"
 		}
 	}
-	`, pfx, pfx, pfx, etc, pfx)))
+	`, pfx, pfx, pfx, pfx, pfx, pfx)))
 	if err != nil {
 		log.Fatalf("failed to call Create method: %v", err)
 	}
@@ -58,6 +58,7 @@ func main() {
 		API string `json:"api"`
 		ID  string `json:"id"`
 	}
+
 	err = json.Unmarshal(bodyBytes, &created)
 	if err != nil {
 		log.Fatalf("failed to unmarshal JSON response of Create method: %v", err)
@@ -78,7 +79,7 @@ func main() {
 	log.Printf("Read response: Code=%d, Body=%s\n\n", resp.StatusCode, body)
 
 	//Call update
-	req, err := http.NewRequest("PUT", fmt.Sprintf("%s%s/%s", *address, "/v1/tasq", created.ID), strings.NewReader(fmt.Sprintf(`{
+	req, err := http.NewRequest("PATCH", fmt.Sprintf("%s%s/%s", *address, "/v1/tasq", created.ID), strings.NewReader(fmt.Sprintf(`{
 		"api":"v1",
 		"toDo":{
 			"title":"title (%s) + updated",
