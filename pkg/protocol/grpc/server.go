@@ -9,6 +9,7 @@ import (
 
 	v1 "github.com/basebandit/go-grpc/pkg/api/v1"
 	"github.com/basebandit/go-grpc/pkg/logger"
+	"github.com/basebandit/go-grpc/pkg/protocol/grpc/middleware"
 	"google.golang.org/grpc"
 )
 
@@ -18,6 +19,12 @@ func RunServer(ctx context.Context, v1API v1.ToDoServiceServer, port string) err
 	if err != nil {
 		return err
 	}
+
+	///gRPC server startup options
+	opts := []grpc.ServerOption{}
+
+	//add middleware
+	opts = middleware.AddLogging(logger.Log, opts)
 
 	//register service
 	server := grpc.NewServer()
