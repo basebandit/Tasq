@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"bitbucket.org/liamstask/goose/lib/goose"
+	"github.com/basebandit/go-grpc/pkg/logger"
 	"github.com/basebandit/go-grpc/pkg/protocol/grpc"
 	"github.com/basebandit/go-grpc/pkg/protocol/rest"
 	v1 "github.com/basebandit/go-grpc/pkg/service/v1"
@@ -74,8 +75,8 @@ func RunServer() error {
 		return fmt.Errorf("invalid database migrations path: '%s'", cfg.DBMigrations)
 	}
 
-	if err:= logger.Init(cfg.LogLevel,cfg.LogTimeFormat);err != nil{
-		return fmt.Errorf("failed to initialize logger: %v",err)
+	if err := logger.Init(cfg.LogLevel, cfg.LogTimeFormat); err != nil {
+		return fmt.Errorf("failed to initialize logger: %v", err)
 	}
 	//Lets chek if migrations Directory path exists
 	if _, err := os.Stat(cfg.DBMigrations); os.IsNotExist(err) {
