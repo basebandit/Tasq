@@ -16,6 +16,9 @@ require (
 	github.com/mattn/go-sqlite3 v1.11.0 // indirect
 	github.com/rogpeppe/fastuuid v1.2.0 // indirect
 	github.com/ziutek/mymysql v1.5.4 // indirect
+	go.uber.org/atomic v1.4.0 // indirect
+	go.uber.org/multierr v1.1.0 // indirect
+	go.uber.org/zap v1.10.0 // indirect
 	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4 // indirect
 	golang.org/x/exp v0.0.0-20190718202018-cfdd5522f6f6 // indirect
 	golang.org/x/image v0.0.0-20190703141733-d6a02ce849c9 // indirect
