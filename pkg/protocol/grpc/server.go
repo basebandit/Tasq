@@ -27,7 +27,7 @@ func RunServer(ctx context.Context, v1API v1.ToDoServiceServer, port string) err
 	opts = middleware.AddLogging(logger.Log, opts)
 
 	//register service
-	server := grpc.NewServer()
+	server := grpc.NewServer(opts...)
 	v1.RegisterToDoServiceServer(server, v1API)
 
 	//graceful shutdown
