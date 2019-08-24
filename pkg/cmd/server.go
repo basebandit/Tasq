@@ -18,8 +18,10 @@ type Config struct {
 
 	//gRPC is the TCP port to listen by gRPC server
 	GRPCPort string
+	
 	//HTTPPort is the TCP port to listen for HTTP/REST gateway connections
 	HTTPPort string
+
 	//DBHost is the host of database
 	DBHost string
 
