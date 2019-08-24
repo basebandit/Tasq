@@ -27,7 +27,9 @@ func main() {
 		Timeout: time.Second * 10,
 	}
 
-	//Call Create
+	//-------------------------------------------------------
+	// Call Create
+	//-------------------------------------------------------
 	resp, err := httpClient.Post(*address+"/v1/tasq", "application/json", strings.NewReader(fmt.Sprintf(`
 	{
 		"api":"v1",
@@ -39,7 +41,7 @@ func main() {
 			"reminder":"%s"
 		}
 	}
-	`, pfx, pfx, pfx, pfx, pfx, pfx)))
+	`, pfx, pfx, pfx, pfx, pfx)))
 	if err != nil {
 		log.Fatalf("failed to call Create method: %v", err)
 	}
@@ -53,10 +55,11 @@ func main() {
 	}
 	log.Printf("Create response: Code=%d, Body=%s\n\n", resp.StatusCode, body)
 
-	//Parse ID of created ToDo
 	var created struct {
+		//API version
 		API string `json:"api"`
-		ID  string `json:"id"`
+		//ID of created entity
+		ID string `json:"id"`
 	}
 
 	err = json.Unmarshal(bodyBytes, &created)
@@ -64,7 +67,9 @@ func main() {
 		log.Fatalf("failed to unmarshal JSON response of Create method: %v", err)
 	}
 
-	//Call Read
+	//-------------------------------------------------------
+	// Call Read
+	//-------------------------------------------------------
 	resp, err = httpClient.Get(fmt.Sprintf("%s%s/%s", *address, "/v1/tasq", created.ID))
 	if err != nil {
 		log.Fatalf("failed to call Read method: %v", err)
@@ -78,18 +83,24 @@ func main() {
 	}
 	log.Printf("Read response: Code=%d, Body=%s\n\n", resp.StatusCode, body)
 
-	//Call update
-	req, err := http.NewRequest("PATCH", fmt.Sprintf("%s%s/%s", *address, "/v1/tasq", created.ID), strings.NewReader(fmt.Sprintf(`{
+	//-------------------------------------------------------
+	// Call update
+	//-------------------------------------------------------
+	req, err := http.NewRequest("PUT", fmt.Sprintf("%s%s/%s", *address, "/v1/tasq", created.ID), strings.NewReader(fmt.Sprintf(`{
 		"api":"v1",
 		"toDo":{
 			"title":"title (%s) + updated",
 			"description":"description (%s) + updated",
 			"status":"Completed",
-			"reminder":"%s"
+			"reminder":"%s",
+			"estimatedTimeOfCompletion":"%s",
+			"actualTimeOfCompletion":"%s"
 		}
 	}`,
-		pfx, pfx, pfx)))
+		pfx, pfx, pfx, pfx, pfx)))
+
 	req.Header.Set("Content-Type", "application/json")
+
 	resp, err = httpClient.Do(req)
 	if err != nil {
 		log.Fatalf("failed to call Update method: %v", err)
@@ -103,8 +114,10 @@ func main() {
 	}
 	log.Printf("update response: Code=%d, Body=%s\n\n", resp.StatusCode, body)
 
-	//Call ReadAll
-	resp, err = httpClient.Get(*address + "/v1/tasq/all")
+	//-------------------------------------------------------
+	// Call ReadAll
+	//-------------------------------------------------------
+	resp, err = httpClient.Get(*address + "/v1/tasq")
 	if err != nil {
 		log.Fatalf("failed to call ReadAll method: %v", err)
 	}
@@ -117,7 +130,9 @@ func main() {
 	}
 	log.Printf("ReadAll response: Code=%d, Body=%s\n\n", resp.StatusCode, body)
 
-	//Call Delete
+	//-------------------------------------------------------
+	// Call Delete
+	//-------------------------------------------------------
 	req, err = http.NewRequest("DELETE", fmt.Sprintf("%s%s/%s", *address, "/v1/tasq", created.ID), nil)
 	resp, err = httpClient.Do(req)
 	if err != nil {
