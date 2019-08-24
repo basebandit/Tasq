@@ -5,6 +5,7 @@ import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
 import "protoc-gen-swagger/options/annotations.proto";
 
+
 option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
  info: {
    title: "ToDo service";
@@ -98,6 +99,7 @@ message UpdateRequest{
 
     // Task entity to update
     ToDo toDo = 2;
+
 }
 
 // Contains status of update operation
@@ -105,7 +107,7 @@ message UpdateResponse{
     // API versioning: it is my best practice to specify version explicitly
     string api = 1;
 
-    // Contains number of entities have beed updated
+    // Contains number of entities have been updated
     // Equals 1 in case of successful update
     int64 updated = 2;
 }
@@ -164,12 +166,12 @@ service ToDoService {
     // Update todo task
     rpc Update(UpdateRequest) returns (UpdateResponse){
       option(google.api.http) = {
-        put: "/v1/tasq/{toDo.id}"
-        body:"*"
+         patch: "/v1/tasq/{toDo.id}"
+         body:"*"
 
         additional_bindings{
-          patch: "/v1/tasq/{toDo.id}"
-          body:"*"
+         put: "/v1/tasq/{toDo.id}"
+         body:"*"
         }
       };
     }
@@ -184,7 +186,7 @@ service ToDoService {
     // Read all todo tasks
     rpc ReadAll(ReadAllRequest) returns (ReadAllResponse){
       option(google.api.http) = {
-        get: "/v1/tasq/all"
+        get: "/v1/tasq"
       };
     }
 }
