@@ -444,12 +444,12 @@ func TestToDoServiceUpdate(t *testing.T) {
 			args: args{
 				ctx: ctx,
 				req: &v1.UpdateRequest{
-					Api: apiVersion,
+					Api: "v1",
 					ToDo: &v1.ToDo{
 						Id:                        1,
 						Title:                     "new title",
 						Description:               "new description",
-						Status:                    "Started",
+						Status:                    "Completed",
 						EstimatedTimeOfCompletion: estimatedTimeOfCompletion,
 						ActualTimeOfCompletion:    actualTimeOfCompletion,
 						Reminder:                  reminder,
@@ -457,7 +457,7 @@ func TestToDoServiceUpdate(t *testing.T) {
 				},
 			},
 			mock: func() {
-				mock.ExpectExec("UPDATE ToDo").WithArgs("new title", "new description", tm, atc, tm, 1).WillReturnResult(sqlMock.NewResult(1, 0))
+				mock.ExpectExec("UPDATE ToDo").WithArgs("new title", "new description", "Completed", tm, atc, tm, 1).WillReturnResult(sqlMock.NewResult(1, 0))
 			},
 			wantErr: true,
 		},
