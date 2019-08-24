@@ -18,7 +18,7 @@ type Config struct {
 
 	//gRPC is the TCP port to listen by gRPC server
 	GRPCPort string
-	
+
 	//HTTPPort is the TCP port to listen for HTTP/REST gateway connections
 	HTTPPort string
 
@@ -36,6 +36,12 @@ type Config struct {
 
 	//DBMigrations is the migrations path of the db schema migrations
 	DBMigrations string
+
+	//LogLevel is global log level: Debug(-1), Info(0), Warn(1), Error(2), DPanic(3), Panic(4), Fatal(5)
+	LogLevel int
+
+	//LogTimeFormat is print time format for logger e.g. 2006-01-02T15:04:05Z07:00
+	LogTimeFormat string
 }
 
 //RunServer runs gRPC server and HTTP gateway
@@ -51,6 +57,8 @@ func RunServer() error {
 	flag.StringVar(&cfg.DBUser, "user", "", "Database user")
 	flag.StringVar(&cfg.DBPassword, "password", "", "Database password")
 	flag.StringVar(&cfg.DBName, "db", "", "Database name")
+	flag.IntVar(&cfg.LogLevel, "log-level", 0, "Global log level")
+	flag.StringVar(&cfg.LogTimeFormat, "log-time-format", "", "Print time format for logger e.g. 2006-01-02T15:04:05Z07:00")
 	flag.StringVar(&cfg.DBMigrations, "migrations", "", "Database schema migrations")
 	flag.Parse()
 
@@ -66,6 +74,9 @@ func RunServer() error {
 		return fmt.Errorf("invalid database migrations path: '%s'", cfg.DBMigrations)
 	}
 
+	if err:= logger.Init(cfg.LogLevel,cfg.LogTimeFormat);err != nil{
+		return fmt.Errorf("failed to initialize logger: %v",err)
+	}
 	//Lets chek if migrations Directory path exists
 	if _, err := os.Stat(cfg.DBMigrations); os.IsNotExist(err) {
 		return fmt.Errorf("you need to provide the path to directory where your migrations are stored:  -migrations <migrations_path>")
