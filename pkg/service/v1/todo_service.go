@@ -165,6 +165,8 @@ func (s *todoServiceServer) Update(ctx context.Context, req *v1.UpdateRequest) (
 	}
 	defer c.Close()
 
+	var actualTimeOfCompletion time.Time
+
 	estimatedTimeOfCompletion, err := ptypes.Timestamp(req.ToDo.EstimatedTimeOfCompletion)
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, "estimatedTimeOfCompletion field has invalid format -> %s", err.Error())
@@ -174,8 +176,6 @@ func (s *todoServiceServer) Update(ctx context.Context, req *v1.UpdateRequest) (
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, "reminder field has invalid format -> %s", err.Error())
 	}
-
-	var actualTimeOfCompletion time.Time
 
 	if req.ToDo.Status == "Completed" {
 		actualTimeOfCompletion = time.Date(2020, 2, 27, 3, 15, 45, 34567, time.UTC)
