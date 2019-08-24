@@ -20,6 +20,36 @@
   ],
   "paths": {
     "/v1/tasq": {
+      "get": {
+        "summary": "Read all todo tasks",
+        "operationId": "ReadAll",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ReadAllResponse"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "format": "string"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "api",
+            "description": "API versioning: it is my best practice to specify version explicitly.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ToDoService"
+        ]
+      },
       "post": {
         "summary": "Create new todo task",
         "operationId": "Create",
@@ -45,38 +75,6 @@
             "schema": {
               "$ref": "#/definitions/v1CreateRequest"
             }
-          }
-        ],
-        "tags": [
-          "ToDoService"
-        ]
-      }
-    },
-    "/v1/tasq/all": {
-      "get": {
-        "summary": "Read all todo tasks",
-        "operationId": "ReadAll",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1ReadAllResponse"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "format": "string"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "api",
-            "description": "API versioning: it is my best practice to specify version explicitly.",
-            "in": "query",
-            "required": false,
-            "type": "string"
           }
         ],
         "tags": [
@@ -165,7 +163,7 @@
     "/v1/tasq/{toDo.id}": {
       "put": {
         "summary": "Update todo task",
-        "operationId": "Update",
+        "operationId": "Update2",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -204,7 +202,7 @@
       },
       "patch": {
         "summary": "Update todo task",
-        "operationId": "Update2",
+        "operationId": "Update",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -381,7 +379,7 @@
         "updated": {
           "type": "string",
           "format": "int64",
-          "title": "Contains number of entities have beed updated\nEquals 1 in case of successful update"
+          "title": "Contains number of entities have been updated\nEquals 1 in case of successful update"
         }
       },
       "title": "Contains status of update operation"
