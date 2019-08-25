@@ -10,7 +10,8 @@ CREATE TABLE IF NOT EXISTS `ToDo` (
 		`EstimatedTimeOfCompletion` timestamp NULL DEFAULT CURRENT_TIMESTAMP, 
 		`ActualTimeOfCompletion` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		PRIMARY KEY (ID),
-		UNIQUE KEY ID_UNIQUE (ID) ); 
+		UNIQUE KEY ID_UNIQUE (ID),
+		UNIQUE KEY TITLE_UNIQUE (Title)); 
 
 
 -- +goose Down
