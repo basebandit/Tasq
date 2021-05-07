@@ -5,7 +5,7 @@ TARGET_CLIENT_GRPC=client-grpc
 
 
 test:
-	@go test -v ./pkg/protocol/service/v1/
+	@go test -v ./pkg/service/v1/
 
 proto: third_party/protoc-gen.sh
 	@chmod u+x ./third_party/protoc-gen.sh
