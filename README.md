@@ -1,2 +1,2 @@
 # Tasq
-A Simple ToDo Manager App Built With Golang(gRPC) and VueJS
+A Simple ToDo Manager Api Built With Golang(gRPC) 
